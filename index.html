@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+ 	<head>
+    	<meta charset="UTF-8" />
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    	<link rel="stylesheet" href="css/style.css" />
+    	<title>Мессенджер</title>
+ 	 </head>
+ 	 <body>
+    	<div class="wrapper">
+	      	<div class="messages"></div>
+	      	<div class="chat">
+	        	<textarea id="userMessage"></textarea>
+	        	<div>
+	          		<button
+	            		id="btnSend"
+	            		onclick="sendMessage(document.querySelector('#userMessage').value )"
+	          			>
+	            		Отправить
+	          		</button>
+	          		<div class="handling">
+		          		<button
+		            		id="btnChangeUsername"
+		            		onclick="changeUsername(document.querySelector('#userMessage').value )"
+		          			>
+		            		Сменить юзернейм
+		          		</button>
+		          		<button
+		            		id="btnChangePhoto"
+		            		onclick="changePhoto(document.querySelector('#userMessage').value )"
+		          			>
+		            		Сменить фото
+		          		</button>
+		          	</div>
+	        	</div>
+	      	</div>
+	    </div>
+
+    <script>
+	  	setUsername();
+	  	setPhoto();
+
+	  	let content = "";
+
+	  	function sendMessage(text) {
+	    	text = text.trim();
+	    	let username = localStorage.getItem("username5");
+	    	let photo = localStorage.getItem("photo3");
+	    	let postman = new XMLHttpRequest();
+	    	postman.open(
+	      		"GET",
+	      		"https://itchycrisplinuxpc.timondecathlon.repl.co/?text=" + text + '&username=' + username + '&photo=' + photo);
+	    		postman.send();
+	    		document.querySelector("#userMessage").value = "";
+	  	}
+
+	  	function showMessages() {
+	    	const messagesDiv = document.querySelector(".messages");
+	    	let postman = new XMLHttpRequest();
+	    	postman.open(
+	      		"GET",
+	      		"https://itchycrisplinuxpc.timondecathlon.repl.co/",
+	      	false
+	    	);
+	    	postman.send();
+	    	if (postman.responseText == content) {
+	      		return;
+	    	}
+	    	content = postman.responseText;
+	    	let data = JSON.parse(postman.responseText);
+	    	messagesDiv.innerHTML = "";
+
+	    	let textAccamulator = "";
+	    	for (messageNumber in data) {
+				human_time = unixTime2Human(data[messageNumber].time);
+	      		textAccamulator += `
+	                <div>
+	                  	<div class="avatar" style="background-image: url('${data[messageNumber].photo}');">
+	                  	</div>
+	                  	<div class="message">
+	                    	<div class="message-username">
+	                        	${data[messageNumber].username}
+	                    	</div>
+	                    	<div>
+	                      		${data[messageNumber].content}
+	                    	</div>
+	                    	<div class="message-time">
+	                      		${human_time}
+	                    	</div>
+	                  	</div>
+	                </div>`;
+	    	}
+	    	messagesDiv.innerHTML = textAccamulator;
+	    	messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+	    	// for (let i = 0; i < data.length; i++) {
+	    	//     document.querySelector('.messages').innerHTML += `
+	    	//     <div>
+	    	//         <div class="message">${data[i]}</div>
+	    	//     </div> `;
+	    	// }
+	  	}
+
+	  	function setUsername() {
+
+	    	//смотрим, заполнено ли имя пользователя
+	    	let username = localStorage.getItem("username5");
+	 
+	    	if (username != null) {
+	      		return;
+	    	}
+
+	    	//вызываем окно с текстом и полем ввода
+	    	username = prompt('Введите имя пользователя');
+
+	    	//сохраним введёное имя в локальное хранилище
+	    	localStorage.setItem('username5', username);
+
+	  	}
+
+	  	function setPhoto() {
+
+		  	//смотрим, заполнено ли имя пользователя
+		  	let photo = localStorage.getItem("photo3");
+
+		  	if (photo != null) {
+		    	return;
+		  	}
+
+		  	//вызываем окно с текстом и полем ввода
+		  	photo = prompt('Введите аватарку');
+
+		  	//сохраним введёное имя в локальное хранилище
+		  	localStorage.setItem('photo3', photo);
+	  	}
+
+	  	function changeUsername() {
+	  		//вызываем окно с текстом и полем ввода
+	  		username = prompt('Введите имя пользователя');
+
+	    	//сохраним введёное имя в локальное хранилище
+	    	localStorage.setItem('username5', username);
+	  	}
+
+	  	function changePhoto() {
+	  		//вызываем окно с текстом и полем ввода
+		  	photo = prompt('Введите аватарку');
+
+		  	//сохраним введёное имя в локальное хранилище
+		  	localStorage.setItem('photo3', photo);
+	  	}
+
+	  	function unixTime2Human(unix_time) {
+	  		year_time_sec = unix_time - 1672531200;
+			if (year_time_sec - (31+28+31+30)*24*60*60 < 0) {
+				month = '04';
+				month_time_sec = year_time_sec - (31+28+31)*24*60*60;
+			} else {
+				month = '05';
+				month_time_sec = year_time_sec - (31+28+31+30)*24*60*60;
+			}
+			day_number = Math.trunc(month_time_sec/(24*60*60)) + 1;
+			day = day_number.toString();
+			day_time_sec = month_time_sec - (day_number - 1)*24*60*60;
+			hour_number = Math.trunc(day_time_sec/(60*60));
+			hour = hour_number.toString();
+			hour_time_sec = day_time_sec - hour_number*60*60;
+			minute_number = Math.trunc(hour_time_sec/60);
+			minute = minute_number.toString();
+			sec_number = hour_time_sec - minute_number*60;
+			second = sec_number.toString();
+			human_time = day + '.' + month + '.23  ' + hour + ':' + minute  + ':' + second;
+			return human_time;
+	  	}
+
+
+	  	setInterval(function () {
+	    	showMessages();
+	  	}, 1000);
+
+	  	document.onkeydown = function (e) {
+	    	if (e.keyCode == 13) {
+	      	document.querySelector("#btnSend").click();
+	    	}
+	  	};
+	</script>
+  	</body>
+</html>
+
